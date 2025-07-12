@@ -1,0 +1,234 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+
+const Signup = () => {
+  const [userName, setUserName] = useState();
+  const [emailId, setEmailId] = useState();
+  const [mobileNumber, setMobileNumber] = useState();
+  const [password, setPassword] = useState("");
+  const [showPasswordHint, setShowPasswordHint] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [addError, setAddError] = useState("");
+
+  // Enhanced Indian mobile validation: 10 digits, starts with 6-9, no sequence
+  const isValidIndianMobile = (number) => {
+    if (!/^[6-9]\d{9}$/.test(number)) return false;
+    // Check for sequential numbers (e.g., 1234567890, 9876543210, etc.)
+    const isSequential = (num) => {
+      let asc = true,
+        desc = true;
+      for (let i = 1; i < num.length; i++) {
+        if (parseInt(num[i]) !== parseInt(num[i - 1]) + 1) asc = false;
+        if (parseInt(num[i]) !== parseInt(num[i - 1]) - 1) desc = false;
+      }
+      return asc || desc;
+    };
+    if (isSequential(number)) return false;
+    return true;
+  };
+
+  // Password validation checks (no spaces allowed)
+  const passwordChecks = {
+    length: password.length >= 8,
+    lower: /[a-z]/.test(password),
+    upper: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+    noSpace: !/\s/.test(password),
+  };
+
+  // Password validation function (no spaces allowed)
+  const validatePassword = (pwd) => {
+    const lengthCheck = pwd.length >= 8;
+    const lowerCheck = /[a-z]/.test(pwd);
+    const upperCheck = /[A-Z]/.test(pwd);
+    const numberCheck = /[0-9]/.test(pwd);
+    const specialCheck = /[^A-Za-z0-9]/.test(pwd);
+    const noSpaceCheck = !/\s/.test(pwd);
+    return (
+      lengthCheck &&
+      lowerCheck &&
+      upperCheck &&
+      numberCheck &&
+      specialCheck &&
+      noSpaceCheck
+    );
+  };
+
+  const handleAddNewUser = async (e) => {
+    e.preventDefault();
+    setAddError("");
+    if (!userName || !emailId || !mobileNumber || !password) {
+      setAddError("All fields are required");
+      return;
+    }
+    if (!isValidIndianMobile(mobileNumber)) {
+      setAddError("Please enter a valid Indian mobile number.");
+      return;
+    }
+    try {
+      const res = await fetch("http://localhost:5080/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userName: userName || "",
+          emailId: emailId || "",
+          mobileNumber: mobileNumber || "",
+          password: password || "",
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setAddError(err.error || "Failed to add contact");
+        return;
+      }
+      setEmailId("");
+      setPassword("");
+      setMobileNumber("");
+      setUserName("");
+    } catch (err) {
+      setAddError("Failed to add contact");
+    }
+  };
+
+  return (
+    <div>
+      <div className="max-w-md mx-auto mt-16 p-8 bg-orange-50 rounded-lg border-oragne-200 ">
+        <h2 className="text-3xl font-extrabold mb-6 text-center text-orange-600 ">
+          Sign up
+        </h2>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!validatePassword(password || "")) {
+              setPasswordError(
+                "Password must be at least 8 characters, include a lowercase letter, an uppercase letter, a number, a special character, and must not contain spaces."
+              );
+              return;
+            }
+            setPasswordError("");
+            if (!isValidIndianMobile(mobileNumber)) {
+              setAddError("Please enter a valid Indian mobile number.");
+              return;
+            }
+            handleAddNewUser(e);
+          }}
+        >
+          <input
+            type="text"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            className="p-3 border-2 border-orange-300 rounded w-full mb-4 focus:outline-focus focus:ring-2 focus:ring-oragne-400"
+            placeholder="User Name"
+          />
+          <input
+            type="email"
+            value={emailId}
+            onChange={(e) => setEmailId(e.target.value)}
+            className="p-3 border-2 border-orange-300 rounded w-full mb-4 focus:outline-focus focus:ring-2 focus:ring-oragne-400"
+            placeholder="Email id"
+          />
+          <input
+            type="number"
+            value={mobileNumber}
+            onChange={(e) => {
+              // Only allow up to 10 digits, starting with 6-9, and prevent sequences
+              let value = e.target.value.replace(/[^0-9]/g, "");
+              if (value.length > 10) value = value.slice(0, 10);
+              // Only allow if first digit is 6-9
+              if (value && !/^[6-9]/.test(value)) return;
+              setMobileNumber(value);
+            }}
+            className="p-3 border-2 border-orange-300 rounded w-full mb-4 focus:outline-focus focus:ring-2 focus:ring-oragne-400"
+            placeholder="Mobile number"
+          />
+
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => {
+              // Prevent spaces in password
+              if (/\s/.test(e.target.value)) return;
+              setPassword(e.target.value);
+            }}
+            onFocus={() => setShowPasswordHint(true)}
+            onBlur={() => setShowPasswordHint(false)}
+            className="p-3 border-2 border-orange-300 rounded w-full mb-1 focus:outline-focus focus:ring-2 focus:ring-oragne-400"
+            placeholder="Password"
+          />
+          {showPasswordHint && !validatePassword(password) && (
+            <div className="text-xs mb-2">
+              <ul className="list-none p-0">
+                <li
+                  className={
+                    passwordChecks.length ? "text-green-600" : "text-gray-600"
+                  }
+                >
+                  {passwordChecks.length ? "✓" : "•"} At least 8 characters
+                </li>
+                <li
+                  className={
+                    passwordChecks.lower ? "text-green-600" : "text-gray-600"
+                  }
+                >
+                  {passwordChecks.lower ? "✓" : "•"} At least one lowercase
+                  letter
+                </li>
+                <li
+                  className={
+                    passwordChecks.upper ? "text-green-600" : "text-gray-600"
+                  }
+                >
+                  {passwordChecks.upper ? "✓" : "•"} At least one uppercase
+                  letter
+                </li>
+                <li
+                  className={
+                    passwordChecks.number ? "text-green-600" : "text-gray-600"
+                  }
+                >
+                  {passwordChecks.number ? "✓" : "•"} At least one number
+                </li>
+                <li
+                  className={
+                    passwordChecks.special ? "text-green-600" : "text-gray-600"
+                  }
+                >
+                  {passwordChecks.special ? "✓" : "•"} At least one special
+                  character
+                </li>
+                <li
+                  className={
+                    passwordChecks.noSpace ? "text-green-600" : "text-gray-600"
+                  }
+                >
+                  {passwordChecks.noSpace ? "✓" : "•"} No spaces allowed
+                </li>
+              </ul>
+            </div>
+          )}
+          {passwordError && (
+            <div className="text-xs text-red-600 mb-2">{passwordError}</div>
+          )}
+
+          <button
+            type="submit"
+            className="px-4 py-4 bg-orange-500 hover:bg-oragne-600 text-black rounded w-full transition-colors duration- cursor-pointer"
+          >
+            Submit
+          </button>
+        </form>
+        <div className="mt-5 text-center text-gray-700">
+          Already have an account?
+          <Link to="/login">
+            <span className="text-orange-500 hover:underline font-semibold cursor-pointer">
+              Login
+            </span>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Signup;
