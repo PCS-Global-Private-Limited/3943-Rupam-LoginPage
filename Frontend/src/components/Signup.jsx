@@ -9,6 +9,49 @@ const Signup = () => {
   const [showPasswordHint, setShowPasswordHint] = useState(false);
   const [passwordError, setPasswordError] = useState("");
   const [addError, setAddError] = useState("");
+  const [isValidEmail, setIsValidEmail] = useState(true);
+
+  // validation email
+  const handleEmailChange = (e) => {
+    const email = e.target.value;
+    setEmailId(email);
+
+    // Basic format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,63}$/i;
+
+    // Disallow consecutive dots
+    const hasConsecutiveDots = email.includes("..");
+
+    // Allow list of TLDs
+    const validTLDs = [
+      "com",
+      "net",
+      "org",
+      "in",
+      "co.in",
+      "gov",
+      "edu",
+      "io",
+      "ai",
+      "dev",
+    ];
+
+    // Extract domain part
+    const domain = email.split("@")[1]?.toLowerCase() || "";
+    const domainParts = domain.split(".");
+    const tldFromDomain =
+      domainParts.slice(-2).join(".").length > 2 &&
+      validTLDs.includes(domainParts.slice(-2).join("."))
+        ? domainParts.slice(-2).join(".")
+        : domainParts.slice(-1)[0];
+
+    const endsWithValidTLD = validTLDs.includes(tldFromDomain);
+
+    // Final validation
+    const isValid =
+      emailRegex.test(email) && !hasConsecutiveDots && endsWithValidTLD;
+    setIsValidEmail(isValid);
+  };
 
   // Enhanced Indian mobile validation: 10 digits, starts with 6-9, no sequence
   const isValidIndianMobile = (number) => {
@@ -100,6 +143,10 @@ const Signup = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            if (!isValidEmail) {
+              setAddError("Please enter a valid email address.");
+              return;
+            }
             if (!validatePassword(password || "")) {
               setPasswordError(
                 "Password must be at least 8 characters, include a lowercase letter, an uppercase letter, a number, a special character, and must not contain spaces."
@@ -124,10 +171,17 @@ const Signup = () => {
           <input
             type="email"
             value={emailId}
-            onChange={(e) => setEmailId(e.target.value)}
-            className="p-3 border-2 border-orange-300 rounded w-full mb-4 focus:outline-focus focus:ring-2 focus:ring-oragne-400"
+            onChange={handleEmailChange}
+            className={`p-3 border-2 border-orange-300 rounded w-full mb-4 focus:outline-focus focus:ring-2 focus:ring-oragne-400 ${
+              isValidEmail ? "border-green-500" : "border-red-500"
+            }`}
             placeholder="Email id"
           />
+          {!isValidEmail && emailId.length > 0 && (
+            <p className="text-red-600 text-sm">
+              Please enter a valid email address
+            </p>
+          )}
           <input
             type="number"
             value={mobileNumber}
