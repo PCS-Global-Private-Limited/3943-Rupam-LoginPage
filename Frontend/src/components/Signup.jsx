@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 
 const Signup = () => {
   const [userName, setUserName] = useState();
@@ -14,6 +14,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const notify = () => toast("You are successfully registered!");
+  const notifyUserExist = () => toast(addError);
 
   // validating email
   const handleEmailChange = (e) => {
@@ -127,7 +128,14 @@ const Signup = () => {
       });
       if (!res.ok) {
         const err = await res.json();
-        setAddError(err.error || "Failed to add contact");
+        if (res.status === 409 && err.exists) {
+          setAddError("User already present with this email or mobile number");
+          console.log(addError);
+          
+          notifyUserExist();
+        } else {
+          setAddError(err.error || "Failed to add contact");
+        }
         return;
       }
       setEmailId("");
@@ -174,7 +182,6 @@ const Signup = () => {
             handleAddNewUser(e);
           }}
         >
-
           {/* Input for userName */}
           <input
             type="text"
@@ -323,7 +330,7 @@ const Signup = () => {
           </Link>
         </div>
       </div>
-      <ToastContainer/>
+      <ToastContainer />
     </div>
   );
 };

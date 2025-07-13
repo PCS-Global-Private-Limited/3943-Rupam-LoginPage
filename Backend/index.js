@@ -1,10 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require('cors');
+const cors = require("cors");
 require("dotenv").config();
-const User = require("./models/SingUp")
+const User = require("./models/SingUp");
 const app = express();
-const PORT =  5080;
+const PORT = 5080;
 const MONGO = "mongodb://localhost:27017/contactdb";
 
 app.use(express.json());
@@ -16,27 +16,29 @@ mongoose.connect(MONGO, {
 });
 
 // Simple route to check server
-app.get('/', (req, res) => {
-  res.send('Contact Search API is running');
+app.get("/", (req, res) => {
+  res.send("Contact Search API is running");
 });
 
-app.post('/signup', async (req, res) => {
+app.post("/signup", async (req, res) => {
   try {
-    const { userName, emailId, mobileNumber,password } = req.body;
-    if (!userName || !emailId || !mobileNumber ||!password) {
-      return res.status(400).json({ error: 'All fields are required' });
+    const { userName, emailId, mobileNumber, password } = req.body;
+    if (!userName || !emailId || !mobileNumber || !password) {
+      return res.status(400).json({ error: "All fields are required" });
     }
-    const newUser = new User({ userName, emailId, mobileNumber,password });
+    // Check if either email or mobile number already exists
+    const user = await User.findOne({ $or: [{ emailId }, { mobileNumber }] });
+    if (user) {
+      return res.status(409).json({ exists: true, message: "User already exists with this email or mobile number" });
+    }
+    const newUser = new User({ userName, emailId, mobileNumber, password });
     await newUser.save();
     res.status(201).json(newUser);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: "Server error" });
   }
 });
-
-
-
 
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
