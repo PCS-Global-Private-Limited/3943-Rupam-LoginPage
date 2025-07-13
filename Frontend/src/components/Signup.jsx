@@ -10,6 +10,7 @@ const Signup = () => {
   const [passwordError, setPasswordError] = useState("");
   const [addError, setAddError] = useState("");
   const [isValidEmail, setIsValidEmail] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   // validation email
   const handleEmailChange = (e) => {
@@ -197,8 +198,9 @@ const Signup = () => {
             placeholder="Mobile number"
           />
 
+          {/* input for password */}
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => {
               // Prevent spaces in password
@@ -265,6 +267,28 @@ const Signup = () => {
             <div className="text-xs text-red-600 mb-2">{passwordError}</div>
           )}
 
+          {/* Show Password portion */}
+          <div
+            class={`flex items-center ${
+              password ? "visible  my-1" : "invisible"
+            }`}
+          >
+            <input
+              id="link-checkbox"
+              type="checkbox"
+              checked={showPassword}
+              onChange={() => setShowPassword(!showPassword)}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label
+              for="link-checkbox"
+              className="ms-2 text-sm font-medium text-gray-600"
+            >
+              Show password
+            </label>
+          </div>
+
+          {/* Button for sumbut the form*/}
           <button
             type="submit"
             className="px-4 py-4 bg-orange-500 hover:bg-oragne-600 text-black rounded w-full transition-colors duration- cursor-pointer"
