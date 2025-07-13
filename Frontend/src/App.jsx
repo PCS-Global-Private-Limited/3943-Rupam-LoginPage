@@ -4,6 +4,7 @@ import "./App.css";
 import Home from "./components/Home";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
+import Chat from "./components/Chat";
 
 function App() {
   const router = createBrowserRouter([
@@ -19,6 +20,10 @@ function App() {
       path:"/login",
       element:<Login/>
     },
+    {
+      path: "/chat",
+      element: <Chat />
+    }
   ]);
 
   return <>

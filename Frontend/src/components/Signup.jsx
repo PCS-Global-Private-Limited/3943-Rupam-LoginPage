@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 
 const Signup = () => {
@@ -12,6 +12,7 @@ const Signup = () => {
   const [addError, setAddError] = useState("");
   const [isValidEmail, setIsValidEmail] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const notify = () => toast("You are successfully registered!");
   const notifyUserExist = () => toast(addError);
@@ -143,6 +144,7 @@ const Signup = () => {
       setMobileNumber("");
       setUserName("");
       notify();
+      navigate("/login", { state: { userName: userName, password: password } })
     } catch (err) {
       setAddError("Failed to add contact");
     }
