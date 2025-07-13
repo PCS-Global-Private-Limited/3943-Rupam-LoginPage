@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
 
 const Signup = () => {
   const [userName, setUserName] = useState();
@@ -12,7 +13,9 @@ const Signup = () => {
   const [isValidEmail, setIsValidEmail] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
-  // validation email
+  const notify = () => toast("You are successfully registered!");
+
+  // validating email
   const handleEmailChange = (e) => {
     const email = e.target.value;
     setEmailId(email);
@@ -99,6 +102,7 @@ const Signup = () => {
     );
   };
 
+  // Checking mobile number valid or not
   const handleAddNewUser = async (e) => {
     e.preventDefault();
     setAddError("");
@@ -130,6 +134,7 @@ const Signup = () => {
       setPassword("");
       setMobileNumber("");
       setUserName("");
+      notify();
     } catch (err) {
       setAddError("Failed to add contact");
     }
@@ -144,14 +149,21 @@ const Signup = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            if (!userName || !emailId || !mobileNumber || !password) {
+              setAddError("All fields are required");
+              setPasswordError("");
+              return;
+            }
             if (!isValidEmail) {
               setAddError("Please enter a valid email address.");
+              setPasswordError("");
               return;
             }
             if (!validatePassword(password || "")) {
               setPasswordError(
                 "Password must be at least 8 characters, include a lowercase letter, an uppercase letter, a number, a special character, and must not contain spaces."
               );
+              setAddError("");
               return;
             }
             setPasswordError("");
@@ -162,6 +174,8 @@ const Signup = () => {
             handleAddNewUser(e);
           }}
         >
+
+          {/* Input for userName */}
           <input
             type="text"
             value={userName}
@@ -169,6 +183,8 @@ const Signup = () => {
             className="p-3 border-2 border-orange-300 rounded w-full mb-4 focus:outline-focus focus:ring-2 focus:ring-oragne-400"
             placeholder="User Name"
           />
+
+          {/* Input for email */}
           <input
             type="email"
             value={emailId}
@@ -183,8 +199,10 @@ const Signup = () => {
               Please enter a valid email address
             </p>
           )}
+
+          {/* Input for mobile number */}
           <input
-            type="number"
+            type="text"
             value={mobileNumber}
             onChange={(e) => {
               // Only allow up to 10 digits, starting with 6-9, and prevent sequences
@@ -305,6 +323,7 @@ const Signup = () => {
           </Link>
         </div>
       </div>
+      <ToastContainer/>
     </div>
   );
 };
