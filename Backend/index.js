@@ -31,10 +31,19 @@ app.post("/signup", async (req, res) => {
     // Check if either email or mobile number already exists
     const user = await User.findOne({ $or: [{ emailId }, { mobileNumber }] });
     if (user) {
-      return res.status(409).json({ exists: true, message: "User already exists with this email or mobile number" });
+      return res.status(409).json({
+        exists: true,
+        message: "User already exists with this email or mobile number",
+      });
     }
     const hashed = await bcrypt.hash(password, 10);
-    const newUser = new User({ userName, emailId, mobileNumber, password : hashed });
+    const newUser = new User({
+      userName,
+      emailId,
+      mobileNumber,
+      password: hashed,
+      date: Date.now(),
+    });
     await newUser.save();
     res.status(201).json(newUser);
   } catch (error) {
@@ -49,11 +58,25 @@ app.post("/login", async (req, res) => {
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
-  const token = jwt.sign({ userId: user._id }, "secret", { expiresIn: "7d" });
+  const token = jwt.sign({ userId: user._id }, "secret", {
+    expiresIn: "0.15h",
+  });
   res.json({ token });
 });
 
+app.post("/admin/dashboard", async (req, res) => {
+  const { from, to } = req.body;
+  const users = await User.find({
+    createdAt: {
+      $gte: new Date(from),
+      $lte: new Date(to),
+    },
+  });
 
+  res.json(users);
+  console.log("Hitting dashboard");
+  
+});
 
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
