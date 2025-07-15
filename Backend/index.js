@@ -64,6 +64,19 @@ app.post("/login", async (req, res) => {
   res.json({ token });
 });
 
+app.post("/admin/login", async (req, res) => {
+  const { userName, password } = req.body;
+  const adminUserName = "rupamBhakta";
+  const adminPassword = "rupamBhakta009@"
+  if (userName!=adminUserName || password!=adminPassword) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+  const token = jwt.sign({ userId: adminUserName }, "secret", {
+    expiresIn: "0.15h",
+  });
+  res.json({ token });
+});
+
 app.post("/admin/dashboard", async (req, res) => {
   const { from, to } = req.body;
   const users = await User.find({
