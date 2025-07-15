@@ -19,45 +19,36 @@ const Signup = () => {
 
   // validating email
   const handleEmailChange = (e) => {
-    const email = e.target.value;
-    setEmailId(email);
+  const email = e.target.value;
+  setEmailId(email);
 
-    // Basic format check
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,63}$/i;
+  // Basic format check
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,63}$/i;
 
-    // Disallow consecutive dots
-    const hasConsecutiveDots = email.includes("..");
+  // Disallow consecutive dots
+  const hasConsecutiveDots = email.includes("..");
 
-    // Allow list of TLDs
-    const validTLDs = [
-      "com",
-      "net",
-      "org",
-      "in",
-      "co.in",
-      "gov",
-      "edu",
-      "io",
-      "ai",
-      "dev",
-    ];
+  // Allowed email services
+  const allowedDomains = [
+    "gmail.com",
+    "yahoo.com",
+    "aol.com",
+    "hotmail.com",
+    "outlook.com"
+  ];
 
-    // Extract domain part
-    const domain = email.split("@")[1]?.toLowerCase() || "";
-    const domainParts = domain.split(".");
-    const tldFromDomain =
-      domainParts.slice(-2).join(".").length > 2 &&
-      validTLDs.includes(domainParts.slice(-2).join("."))
-        ? domainParts.slice(-2).join(".")
-        : domainParts.slice(-1)[0];
+  // Extract domain from email
+  const domain = email.split("@")[1]?.toLowerCase() || "";
 
-    const endsWithValidTLD = validTLDs.includes(tldFromDomain);
+  // Final validation
+  const isValid =
+    emailRegex.test(email) &&
+    !hasConsecutiveDots &&
+    allowedDomains.includes(domain);
 
-    // Final validation
-    const isValid =
-      emailRegex.test(email) && !hasConsecutiveDots && endsWithValidTLD;
-    setIsValidEmail(isValid);
-  };
+  setIsValidEmail(isValid);
+};
+
 
   // Enhanced Indian mobile validation: 10 digits, starts with 6-9, no sequence
   const isValidIndianMobile = (number) => {
