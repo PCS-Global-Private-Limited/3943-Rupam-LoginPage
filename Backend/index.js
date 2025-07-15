@@ -71,25 +71,40 @@ app.post("/admin/login", async (req, res) => {
   if (userName!=adminUserName || password!=adminPassword) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
-  const token = jwt.sign({ userId: adminUserName }, "secret", {
+  const tokenForAdmin = jwt.sign({ userId: adminUserName }, "secret", {
     expiresIn: "0.15h",
   });
-  res.json({ token });
+  res.json({ tokenForAdmin });
 });
 
 app.post("/admin/dashboard", async (req, res) => {
-  const { from, to } = req.body;
-  const users = await User.find({
-    createdAt: {
-      $gte: new Date(from),
-      $lte: new Date(to),
-    },
-  });
+  const { startDate, endDate } = req.body;
 
-  res.json(users);
-  console.log("Hitting dashboard");
-  
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // Create start and end of that day
+  const startOfDay = new Date(start);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(end);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  try {
+    const users = await User.find({
+      createdAt: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    });
+
+    res.json(users);
+    console.log("Hitting dashboard");
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching users" });
+  }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);

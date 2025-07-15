@@ -7,27 +7,23 @@ import { useEffect } from "react";
 
 const Dashboard = () => {
   const [startDate, setStartDate] = useState();
+  const [endDate, setEndDate] = useState();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tab, setTab] = useState("today");
   const navigate = useNavigate();
 
-  const fetchTodaysData = async () => {
-    setShowDatePicker(false); // Hide datepicker when Today is clicked
+  const fecthData = async (startDate, endDate) => {
     setLoading(true);
-    const today = Date.now();
-    const startOfDay = new Date(today);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(today);
-    endOfDay.setHours(23, 59, 59, 999);
     try {
       const responce = await axios.post(
         "http://localhost:5080/admin/dashboard",
         {
-          from: startOfDay,
-          to: endOfDay,
+          startDate: startDate,
+          endDate: endDate,
         }
       );
+
       setUsers(responce.data);
       setLoading(false);
     } catch (e) {
@@ -36,49 +32,33 @@ const Dashboard = () => {
     }
   };
 
-  const fetchData = async (date) => {
-    const selectedDate = date || startDate;
-    if (!selectedDate) return;
-    setLoading(true);
-    const startOfDay = new Date(selectedDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(selectedDate);
-    endOfDay.setHours(23, 59, 59, 999);
-    try {
-      const response = await axios.post(
-        "http://localhost:5080/admin/dashboard",
-        {
-          from: startOfDay,
-          to: endOfDay,
-        }
-      );
-      setUsers(response.data);
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      console.error("Error fetching users:", error);
-    }
+  const customSearch = () => {
+    fecthData(startDate, endDate);
   };
 
-  const handleCustomClick = () => {
-    setShowDatePicker(!showDatePicker);
-  };
-
-  const handleDateChange = (date) => {
-    setStartDate(date);
-    setShowDatePicker(false);
-    fetchData(date);
+  const handleCustomTabClick = () => {
+    setUsers([]);
+    setTab("custom");
   };
 
   const hendleLogout = async () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("tokenForAdmin");
     navigate("/admin/login");
   };
 
+  const handleTodaySearch = () => {
+    setTab("today");
+    const today = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+        }).format(new Date());
+    fecthData(today, today);
+  }
+
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
+    if (!localStorage.getItem("tokenForAdmin")) {
       navigate("/admin/login");
     }
+    handleTodaySearch();
   }, [navigate]);
 
   return (
@@ -95,39 +75,52 @@ const Dashboard = () => {
         <div className="min-h-screen flex flex-col gap-8 items-center justify-start pt-5">
           <div className="flex gap-4 text-white">
             <button
-              onClick={fetchTodaysData}
+              onClick={handleTodaySearch}
               className="border-2 border-black bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200"
             >
               Today
             </button>
             <button
-              onClick={handleCustomClick}
+              onClick={handleCustomTabClick}
               className="border-2 border-black bg-white text-blue-700 hover:bg-blue-100 px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200"
+              disabled={tab === "custom"}
             >
               Custom
             </button>
           </div>
-          {showDatePicker && (
+          {tab === "custom" && (
             <div className="mt-4 bg-white p-4 rounded-xl shadow-lg border border-blue-200">
-              <DatePicker
-                selected={startDate}
-                onChange={handleDateChange}
-                className="w-full px-4 py-2 border border-blue-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-black bg-white"
-                placeholderText="Click to select a date"
-                inline
+              <label>Start Date:</label>
+              <input
+                onChange={(event) => setStartDate(event.target.value)}
+                type="date"
+                value={startDate}
               />
+              <br />
+              <label>End Date:</label>
+              <input
+                onChange={(event) => setEndDate(event.target.value)}
+                type="date"
+                value={endDate}
+              />
+              <button
+                onClick={customSearch}
+                className="border-2 border-black bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200"
+              >
+                Search
+              </button>
             </div>
           )}
           <div>
             <div
               className={`p-6 bg-white rounded-2xl shadow-xl border border-blue-200`}
-              style={{ display: showDatePicker ? 'none' : 'block' }}
+              style={{ display: !users ? "none" : "block" }}
             >
               <h1 className="text-2xl font-bold mb-4 text-blue-800">
                 User Registration Data
               </h1>
 
-              {loading ? (
+              {!users ? (
                 <p className="text-blue-500">Loading users...</p>
               ) : (
                 <div className="overflow-x-auto">

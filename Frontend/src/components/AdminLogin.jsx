@@ -20,8 +20,8 @@ const AdminLogin = () => {
 
     const data = await responce.json();
     setAuthLoading(false);
-    if (data.token) {
-      localStorage.setItem("token", data.token);
+    if (data.tokenForAdmin) {
+      localStorage.setItem("tokenForAdmin", data.tokenForAdmin);
       navigate("/admin/dashboard");
     } else {
       setAuthError(data.message || "Login Failed");
@@ -29,7 +29,7 @@ const AdminLogin = () => {
   };
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
+    if (localStorage.getItem("tokenForAdmin")) {
       navigate("/admin/dashboard");
     }
   }, [navigate]);
