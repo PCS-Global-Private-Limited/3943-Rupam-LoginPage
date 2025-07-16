@@ -1,9 +1,8 @@
-import React, { useState } from "react";
-import DatePicker from "react-datepicker";
+import React, { useState, useEffect } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import moment from "moment-timezone";
 
 const Dashboard = () => {
   const [startDate, setStartDate] = useState();
@@ -12,6 +11,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState("today");
   const navigate = useNavigate();
+  const timeZone = "Asia/Kolkata";
+  const todayDate = moment().tz(timeZone).format("YYYY-MM-DD");
 
   const fecthData = async (startDate, endDate) => {
     setLoading(true);
@@ -28,7 +29,7 @@ const Dashboard = () => {
       setLoading(false);
     } catch (e) {
       setLoading(false);
-      console.error("Error fetching users:", error);
+      console.error("Error fetching users:", e);
     }
   };
 
@@ -48,99 +49,62 @@ const Dashboard = () => {
 
   const handleTodaySearch = () => {
     setTab("today");
-    const today = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-    }).format(new Date());
+    const today = moment().tz(timeZone).format("YYYY-MM-DD");
     fecthData(today, today);
   };
 
   const handleYesterday = async () => {
     setTab("yesterday");
-    const formatter = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-    });
-
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const yesterdayFormatted = formatter.format(yesterday);
-
-    fecthData(yesterdayFormatted, yesterdayFormatted);
+    const yesterday = moment().tz(timeZone).subtract(1, 'days').format("YYYY-MM-DD");
+    fecthData(yesterday, yesterday);
   };
 
   const handleLast7Days = async () => {
     setTab("last7Days");
-    const formatter = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-    });
-    const today = formatter.format(new Date());
-    const sevenDaysAgoDate = new Date();
-    sevenDaysAgoDate.setDate(sevenDaysAgoDate.getDate() - 6); // 6 days ago + today = 7 days
-    const sevenDaysAgo = formatter.format(sevenDaysAgoDate);
-
+    const today = moment().tz(timeZone).format("YYYY-MM-DD");
+    const sevenDaysAgo = moment().tz(timeZone).subtract(6, 'days').format("YYYY-MM-DD");
     fecthData(sevenDaysAgo, today);
   };
 
   const handleLastweek = async () => {
     setTab("lastWeek");
-    const formatter = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-    });
-    const today = new Date();
-    const day = today.getDay();
-    const diffToLastMonday = day === 0 ? 7 + 6 : day + 6;
-    const lastMonday = new Date(today);
-    lastMonday.setDate(today.getDate() - diffToLastMonday);
-    const lastSunday = new Date(lastMonday);
-    lastSunday.setDate(lastMonday.getDate() + 6);
-    const lastWeekStart = formatter.format(lastMonday);
-    const lastWeekEnd = formatter.format(lastSunday);
+    const today = moment().tz(timeZone);
+    const lastMonday = today.clone().startOf('week').subtract(1, 'week');
+    const lastSunday = today.clone().endOf('week').subtract(1, 'week');
+    const lastWeekStart = lastMonday.format("YYYY-MM-DD");
+    const lastWeekEnd = lastSunday.format("YYYY-MM-DD");
 
     fecthData(lastWeekStart, lastWeekEnd);
   };
 
   const handleMonthTillDate = async () => {
     setTab("MonthTillDate");
-    const formatter = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-    });
-
-    const today = new Date();
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthStartFormatted = formatter.format(monthStart);
-    const todayFormatted = formatter.format(today);
+    const today = moment().tz(timeZone);
+    const monthStart = today.clone().startOf('month');
+    const monthStartFormatted = monthStart.format("YYYY-MM-DD");
+    const todayFormatted = today.format("YYYY-MM-DD");
 
     fecthData(monthStartFormatted, todayFormatted);
   };
 
   const handleLastMonth = async () => {
     setTab("LastMonth");
-    const formatter = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-    });
+    const today = moment().tz(timeZone);
+    const lastMonthStart = today.clone().subtract(1, 'month').startOf('month');
+    const lastMonthEnd = today.clone().subtract(1, 'month').endOf('month');
 
-    const today = new Date();
-    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-
-    // Start of last month
-    const lastMonthStart = new Date(
-      lastMonth.getFullYear(),
-      lastMonth.getMonth(),
-      1
-    );
-
-    // End of last month
-    const lastMonthEnd = new Date(
-      lastMonth.getFullYear(),
-      lastMonth.getMonth() + 1,
-      0
-    );
-
-    // Format
-    const lastMonthStartFormatted = formatter.format(lastMonthStart);
-    const lastMonthEndFormatted = formatter.format(lastMonthEnd);
+    const lastMonthStartFormatted = lastMonthStart.format("YYYY-MM-DD");
+    const lastMonthEndFormatted = lastMonthEnd.format("YYYY-MM-DD");
 
     fecthData(lastMonthStartFormatted, lastMonthEndFormatted);
+  };
+
+  const handleStartDateChange = (event) => {
+    setStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event) => {
+    setEndDate(event.target.value);
   };
 
   useEffect(() => {
@@ -181,7 +145,7 @@ const Dashboard = () => {
                   : "bg-white text-blue-700 hover:bg-blue-100"
               }`}
             >
-              Yestarday
+              Yesterday
             </button>
 
             <button
@@ -247,9 +211,10 @@ const Dashboard = () => {
                   Start Date:
                 </label>
                 <input
-                  onChange={(event) => setStartDate(event.target.value)}
                   type="date"
                   value={startDate}
+                  max={todayDate}
+                  onChange={handleStartDateChange}
                   className="border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-blue-900 shadow-sm"
                 />
               </div>
@@ -258,7 +223,10 @@ const Dashboard = () => {
                   End Date:
                 </label>
                 <input
-                  onChange={(event) => setEndDate(event.target.value)}
+                  min={startDate}
+                  max={todayDate}
+                  disabled={!startDate}
+                  onChange={handleEndDateChange}
                   type="date"
                   value={endDate}
                   className="border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-blue-900 shadow-sm"
@@ -276,7 +244,6 @@ const Dashboard = () => {
             <div>
               <div
                 className={`p-6 bg-white rounded-2xl shadow-xl border border-blue-200 mb-5`}
-                // style={{ display: !users ? "none" : "block" }}
               >
                 <h1 className="text-2xl font-bold mb-4 text-blue-800">
                   User Registration Data
@@ -319,7 +286,7 @@ const Dashboard = () => {
                               {user.mobileNumber}
                             </td>
                             <td className="px-4 py-2 border-b border-blue-100 text-black">
-                              {new Date(user.createdAt).toLocaleDateString()}
+                              {moment(user.createdAt).tz(timeZone).format('YYYY-MM-DD')}
                             </td>
                           </tr>
                         ))
