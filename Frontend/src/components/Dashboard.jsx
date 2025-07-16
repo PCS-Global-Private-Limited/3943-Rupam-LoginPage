@@ -54,6 +54,95 @@ const Dashboard = () => {
     fecthData(today, today);
   };
 
+  const handleYesterday = async () => {
+    setTab("yesterday");
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const yesterdayFormatted = formatter.format(yesterday);
+
+    fecthData(yesterdayFormatted, yesterdayFormatted);
+  };
+
+  const handleLast7Days = async () => {
+    setTab("last7Days");
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+    const today = formatter.format(new Date());
+    const sevenDaysAgoDate = new Date();
+    sevenDaysAgoDate.setDate(sevenDaysAgoDate.getDate() - 6); // 6 days ago + today = 7 days
+    const sevenDaysAgo = formatter.format(sevenDaysAgoDate);
+
+    fecthData(sevenDaysAgo, today);
+  };
+
+  const handleLastweek = async () => {
+    setTab("lastWeek");
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+    const today = new Date();
+    const day = today.getDay();
+    const diffToLastMonday = day === 0 ? 7 + 6 : day + 6;
+    const lastMonday = new Date(today);
+    lastMonday.setDate(today.getDate() - diffToLastMonday);
+    const lastSunday = new Date(lastMonday);
+    lastSunday.setDate(lastMonday.getDate() + 6);
+    const lastWeekStart = formatter.format(lastMonday);
+    const lastWeekEnd = formatter.format(lastSunday);
+
+    fecthData(lastWeekStart, lastWeekEnd);
+  };
+
+  const handleMonthTillDate = async () => {
+    setTab("MonthTillDate");
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+
+    const today = new Date();
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthStartFormatted = formatter.format(monthStart);
+    const todayFormatted = formatter.format(today);
+
+    fecthData(monthStartFormatted, todayFormatted);
+  };
+
+  const handleLastMonth = async () => {
+    setTab("LastMonth");
+    const formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+
+    const today = new Date();
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+
+    // Start of last month
+    const lastMonthStart = new Date(
+      lastMonth.getFullYear(),
+      lastMonth.getMonth(),
+      1
+    );
+
+    // End of last month
+    const lastMonthEnd = new Date(
+      lastMonth.getFullYear(),
+      lastMonth.getMonth() + 1,
+      0
+    );
+
+    // Format
+    const lastMonthStartFormatted = formatter.format(lastMonthStart);
+    const lastMonthEndFormatted = formatter.format(lastMonthEnd);
+
+    fecthData(lastMonthStartFormatted, lastMonthEndFormatted);
+  };
+
   useEffect(() => {
     if (!localStorage.getItem("tokenForAdmin")) {
       navigate("/admin/login");
@@ -76,13 +165,73 @@ const Dashboard = () => {
           <div className="flex gap-4 text-white">
             <button
               onClick={handleTodaySearch}
-              className="border-2 border-black bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200"
+              className={`border-2 border-black  px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200 ${
+                tab === "today"
+                  ? "bg-blue-700 text-white"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }`}
             >
               Today
             </button>
             <button
+              onClick={handleYesterday}
+              className={`border-2 border-black  px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200 ${
+                tab === "yesterday"
+                  ? "bg-blue-700 text-white"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }`}
+            >
+              Yestarday
+            </button>
+
+            <button
+              onClick={handleLast7Days}
+              className={`border-2 border-black  px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200 ${
+                tab === "last7Days"
+                  ? "bg-blue-700 text-white"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }`}
+            >
+              Last 7 Days
+            </button>
+            <button
+              onClick={handleLastweek}
+              className={`border-2 border-black  px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200 ${
+                tab === "lastWeek"
+                  ? "bg-blue-700 text-white"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }`}
+            >
+              Last week
+            </button>
+            <button
+              onClick={handleMonthTillDate}
+              className={`border-2 border-black  px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200 ${
+                tab === "MonthTillDate"
+                  ? "bg-blue-700 text-white"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }`}
+            >
+              Month Till Date
+            </button>
+            <button
+              onClick={handleLastMonth}
+              className={`border-2 border-black  px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200 ${
+                tab === "LastMonth"
+                  ? "bg-blue-700 text-white"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }`}
+            >
+              Last Month
+            </button>
+
+            <button
               onClick={handleCustomTabClick}
-              className="border-2 border-black bg-white text-blue-700 hover:bg-blue-100 px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200"
+              className={`border-2 border-black px-5 py-2 rounded-4xl cursor-pointer font-semibold shadow-md transition-colors duration-200 ${
+                tab === "custom"
+                  ? "bg-blue-700 text-white"
+                  : "bg-white text-blue-700 hover:bg-blue-100"
+              }`}
               disabled={tab === "custom"}
             >
               Custom
@@ -125,78 +274,69 @@ const Dashboard = () => {
           )}
           <div>
             <div>
-              {users.length > 0 && (
-                <div
-                  className={`p-6 bg-white rounded-2xl shadow-xl border border-blue-200 mb-5`}
-                  // style={{ display: !users ? "none" : "block" }}
-                >
-                  <h1 className="text-2xl font-bold mb-4 text-blue-800">
-                    User Registration Data
-                  </h1>
-
-                  {!users ? (
-                    <p className="text-blue-500">Loading users...</p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full bg-white border border-blue-200 shadow-sm rounded-lg">
-                        <thead>
-                          <tr className="bg-blue-100 text-left text-sm font-semibold text-blue-900">
-                            <th className="px-4 py-2 border-b border-blue-200">
-                              Count
-                            </th>
-                            <th className="px-4 py-2 border-b border-blue-200">
-                              Name
-                            </th>
-                            <th className="px-4 py-2 border-b border-blue-200">
-                              Email
-                            </th>
-                            <th className="px-4 py-2 border-b border-blue-200">
-                              Mobile Number
-                            </th>
-                            <th className="px-4 py-2 border-b border-blue-200">
-                              Registered On
-                            </th>
+              <div
+                className={`p-6 bg-white rounded-2xl shadow-xl border border-blue-200 mb-5`}
+                // style={{ display: !users ? "none" : "block" }}
+              >
+                <h1 className="text-2xl font-bold mb-4 text-blue-800">
+                  User Registration Data
+                </h1>
+                <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
+                  <table className="min-w-full bg-white border border-blue-200 shadow-sm rounded-lg">
+                    <thead>
+                      <tr className="bg-blue-100 text-left text-sm font-semibold text-blue-900">
+                        <th className="sticky top-0 bg-blue-100 z-10 px-4 py-2 border-b border-blue-200">
+                          Count
+                        </th>
+                        <th className="sticky top-0 bg-blue-100 z-10 px-4 py-2 border-b border-blue-200">
+                          Name
+                        </th>
+                        <th className="sticky top-0 bg-blue-100 z-10 px-4 py-2 border-b border-blue-200">
+                          Email
+                        </th>
+                        <th className="sticky top-0 bg-blue-100 z-10 px-4 py-2 border-b border-blue-200">
+                          Mobile Number
+                        </th>
+                        <th className="sticky top-0 bg-blue-100 z-10 px-4 py-2 border-b border-blue-200">
+                          Registered On
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.length > 0 ? (
+                        users.map((user, index) => (
+                          <tr key={user._id} className="hover:bg-blue-50">
+                            <td className="px-4 py-2 border-b border-blue-100">
+                              {index + 1}
+                            </td>
+                            <td className="px-4 py-2 border-b border-blue-100 text-black">
+                              {user.userName}
+                            </td>
+                            <td className="px-4 py-2 border-b border-blue-100 text-black">
+                              {user.emailId}
+                            </td>
+                            <td className="px-4 py-2 border-b border-blue-100 text-black">
+                              {user.mobileNumber}
+                            </td>
+                            <td className="px-4 py-2 border-b border-blue-100 text-black">
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {users.length > 0 ? (
-                            users.map((user, index) => (
-                              <tr key={user._id} className="hover:bg-blue-50">
-                                <td className="px-4 py-2 border-b border-blue-100">
-                                  {index + 1}
-                                </td>
-                                <td className="px-4 py-2 border-b border-blue-100 text-black">
-                                  {user.userName}
-                                </td>
-                                <td className="px-4 py-2 border-b border-blue-100 text-black">
-                                  {user.emailId}
-                                </td>
-                                <td className="px-4 py-2 border-b border-blue-100 text-black">
-                                  {user.mobileNumber}
-                                </td>
-                                <td className="px-4 py-2 border-b border-blue-100 text-black">
-                                  {new Date(
-                                    user.createdAt
-                                  ).toLocaleDateString()}
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td
-                                colSpan="5"
-                                className="px-4 py-4 text-center text-blue-400"
-                              >
-                                No users found.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="5"
+                            className="px-4 py-4 text-center text-blue-400"
+                          >
+                            No users found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
