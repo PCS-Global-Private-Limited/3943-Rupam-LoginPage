@@ -59,7 +59,7 @@ app.post("/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials" });
   }
   const token = jwt.sign({ userId: user._id }, "secret", {
-    expiresIn: "0.15h",
+    expiresIn: "1h",
   });
   res.json({ token });
 });
@@ -72,7 +72,7 @@ app.post("/admin/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials" });
   }
   const tokenForAdmin = jwt.sign({ userId: adminUserName }, "secret", {
-    expiresIn: "0.15h",
+    expiresIn: "1h",
   });
   res.json({ tokenForAdmin });
 });
