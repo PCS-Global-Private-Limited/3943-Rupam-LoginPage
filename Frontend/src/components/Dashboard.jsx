@@ -3,6 +3,25 @@ import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment-timezone";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const Dashboard = () => {
   const [startDate, setStartDate] = useState();
@@ -13,6 +32,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const timeZone = "Asia/Kolkata";
   const todayDate = moment().tz(timeZone).format("YYYY-MM-DD");
+  const [userCounts, setUserCounts] = useState({});
 
   const fecthData = async (startDate, endDate) => {
     setLoading(true);
@@ -55,22 +75,28 @@ const Dashboard = () => {
 
   const handleYesterday = async () => {
     setTab("yesterday");
-    const yesterday = moment().tz(timeZone).subtract(1, 'days').format("YYYY-MM-DD");
+    const yesterday = moment()
+      .tz(timeZone)
+      .subtract(1, "days")
+      .format("YYYY-MM-DD");
     fecthData(yesterday, yesterday);
   };
 
   const handleLast7Days = async () => {
     setTab("last7Days");
     const today = moment().tz(timeZone).format("YYYY-MM-DD");
-    const sevenDaysAgo = moment().tz(timeZone).subtract(6, 'days').format("YYYY-MM-DD");
+    const sevenDaysAgo = moment()
+      .tz(timeZone)
+      .subtract(6, "days")
+      .format("YYYY-MM-DD");
     fecthData(sevenDaysAgo, today);
   };
 
   const handleLastweek = async () => {
     setTab("lastWeek");
     const today = moment().tz(timeZone);
-    const lastMonday = today.clone().startOf('week').subtract(1, 'week');
-    const lastSunday = today.clone().endOf('week').subtract(1, 'week');
+    const lastMonday = today.clone().startOf("week").subtract(1, "week");
+    const lastSunday = today.clone().endOf("week").subtract(1, "week");
     const lastWeekStart = lastMonday.format("YYYY-MM-DD");
     const lastWeekEnd = lastSunday.format("YYYY-MM-DD");
 
@@ -80,7 +106,7 @@ const Dashboard = () => {
   const handleMonthTillDate = async () => {
     setTab("MonthTillDate");
     const today = moment().tz(timeZone);
-    const monthStart = today.clone().startOf('month');
+    const monthStart = today.clone().startOf("month");
     const monthStartFormatted = monthStart.format("YYYY-MM-DD");
     const todayFormatted = today.format("YYYY-MM-DD");
 
@@ -90,8 +116,8 @@ const Dashboard = () => {
   const handleLastMonth = async () => {
     setTab("LastMonth");
     const today = moment().tz(timeZone);
-    const lastMonthStart = today.clone().subtract(1, 'month').startOf('month');
-    const lastMonthEnd = today.clone().subtract(1, 'month').endOf('month');
+    const lastMonthStart = today.clone().subtract(1, "month").startOf("month");
+    const lastMonthEnd = today.clone().subtract(1, "month").endOf("month");
 
     const lastMonthStartFormatted = lastMonthStart.format("YYYY-MM-DD");
     const lastMonthEndFormatted = lastMonthEnd.format("YYYY-MM-DD");
@@ -113,6 +139,45 @@ const Dashboard = () => {
     }
     handleTodaySearch();
   }, [navigate]);
+
+  useEffect(() => {
+    const counts = {};
+    users.forEach((user) => {
+      const registeredDate = moment(user.createdAt)
+        .tz(timeZone)
+        .format("YYYY-MM-DD");
+      counts[registeredDate] = (counts[registeredDate] || 0) + 1;
+    });
+    setUserCounts(counts);
+  }, [users, timeZone]);
+
+  const chartData = {
+    labels: Object.keys(userCounts),
+    datasets: [
+      {
+        label: "Users Registered",
+        data: Object.values(userCounts),
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: "User Registration Progress",
+      },
+    },
+  };
+
+  const showChart =
+    tab !== "today" &&
+    tab !== "yesterday" &&
+    Object.keys(userCounts).length > 0;
 
   return (
     <>
@@ -241,13 +306,27 @@ const Dashboard = () => {
             </div>
           )}
           <div>
+            {/* Chart Display */}
+            {showChart && (
+              <div
+                className={`p-6 bg-white rounded-2xl shadow-xl border border-blue-200 mb-5`}
+              >
+                <Bar data={chartData} options={chartOptions} />
+              </div>
+            )}
             <div>
               <div
                 className={`p-6 bg-white rounded-2xl shadow-xl border border-blue-200 mb-5`}
               >
-                <h1 className="text-2xl font-bold mb-4 text-blue-800">
-                  User Registration Data
-                </h1>
+                <div className="flex justify-between pr-2">
+                  <h1 className="text-2xl font-bold mb-4 text-blue-800">
+                    User Registration Data
+                  </h1>
+                  <h2 className="text-xl font-bold mb-4 text-blue-800">
+                    Total :{" "}
+                    <span className="text-green-600">{users.length}</span>
+                  </h2>
+                </div>
                 <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
                   <table className="min-w-full bg-white border border-blue-200 shadow-sm rounded-lg">
                     <thead>
@@ -286,7 +365,9 @@ const Dashboard = () => {
                               {user.mobileNumber}
                             </td>
                             <td className="px-4 py-2 border-b border-blue-100 text-black">
-                              {moment(user.createdAt).tz(timeZone).format('YYYY-MM-DD')}
+                              {moment(user.createdAt)
+                                .tz(timeZone)
+                                .format("YYYY-MM-DD")}
                             </td>
                           </tr>
                         ))
