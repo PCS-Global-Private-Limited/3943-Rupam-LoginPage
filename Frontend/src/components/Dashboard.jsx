@@ -13,6 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import Calendar from "./Calender";
 
 ChartJS.register(
   CategoryScale,
@@ -267,43 +268,48 @@ const Dashboard = () => {
             </button>
           </div>
           {tab === "custom" && (
-            <div className="mt-2 bg-white p-6 rounded-2xl shadow-xl border border-blue-200 flex flex-col gap-4 w-full max-w-md mx-auto">
-              <h2 className="text-xl font-bold text-blue-800 mb-2">
-                Custom Date Search
-              </h2>
-              <div className="flex flex-col gap-2">
-                <label className="text-blue-700 font-semibold mb-1">
-                  Start Date:
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  max={todayDate}
-                  onChange={handleStartDateChange}
-                  className="border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-blue-900 shadow-sm"
-                />
+            <div className="flex w-3/5 justify-center items-center mx-auto gap-5">
+              <Calendar />
+              <div className="mt-2 bg-white p-6 rounded-2xl shadow-xl border border-blue-200 flex flex-col gap-4 w-full max-w-md mx-auto">
+                <h2 className="text-xl font-bold text-blue-800 mb-2">
+                  Custom Date Search
+                </h2>
+                <div className="flex flex-col gap-2">
+                  <label className="text-blue-700 font-semibold mb-1">
+                    Start Date:
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    max={todayDate}
+                    onChange={handleStartDateChange}
+                    className="border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-blue-900 shadow-sm"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-blue-700 font-semibold mb-1">
+                    End Date:
+                  </label>
+                  <input
+                    min={startDate}
+                    max={todayDate}
+                    disabled={!startDate}
+                    onChange={handleEndDateChange}
+                    type="date"
+                    value={endDate}
+                    className="border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-blue-900 shadow-sm"
+                  />
+                </div>
+                <button
+                  onClick={customSearch}
+                  className="mt-4 border-2 border-black bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full cursor-pointer font-semibold shadow-md transition-colors duration-200"
+                >
+                  Search
+                </button>
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-blue-700 font-semibold mb-1">
-                  End Date:
-                </label>
-                <input
-                  min={startDate}
-                  max={todayDate}
-                  disabled={!startDate}
-                  onChange={handleEndDateChange}
-                  type="date"
-                  value={endDate}
-                  className="border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-blue-900 shadow-sm"
-                />
-              </div>
-              <button
-                onClick={customSearch}
-                className="mt-4 border-2 border-black bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full cursor-pointer font-semibold shadow-md transition-colors duration-200"
-              >
-                Search
-              </button>
+
             </div>
+
           )}
           <div>
             {/* Chart Display */}
